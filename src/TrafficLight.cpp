@@ -11,6 +11,18 @@ T MessageQueue<T>::receive()
     // FP.5a : The method receive should use std::unique_lock<std::mutex> and _condition.wait() 
     // to wait for and receive new messages and pull them from the queue using move semantics. 
     // The received object should then be returned by the receive function. 
+
+    // perform modification of _messages under the lock
+    std::unique_lock<std::mutex> myLock(_mutex);
+
+    // pass unique lock to condition variable
+    _cond.wait(myLock, [this] { return !_messages.empty(); }); 
+
+    // remove last element from _messages
+    T msg = std::move(_messages.back());
+    _messages.pop_back();
+
+    return msg;
 }
 
 template <typename T>
@@ -49,6 +61,15 @@ void TrafficLight::waitForGreen()
     // FP.5b : add the implementation of the method waitForGreen, in which an infinite while-loop 
     // runs and repeatedly calls the receive function on the message queue. 
     // Once it receives TrafficLightPhase::green, the method returns.
+    while (true)
+    {
+        TrafficLightPhase phase = _queue.receive();
+
+        if (phase == TrafficLightPhase::green)
+        {
+            break;
+        }
+    }
 }
 
 // Starts cycleThroughPhases“() as a thread and adds the thread to the thread queue
@@ -90,7 +111,7 @@ void TrafficLight::cycleThroughPhases()
     std::chrono::duration<float> diff; // time between start and end in seconds
     float target  = randomFloatBetween(4.0, 6.0); // set random target cycle duration between 4 to 6 seconds
 
-    while(true) {
+    while (true) {
         diff = end - start;
 
         if (diff.count() >= target) // target cycle duration has been reached
