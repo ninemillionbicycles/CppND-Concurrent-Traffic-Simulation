@@ -19,6 +19,8 @@ template <class T>
 class MessageQueue
 {
 public:
+    void send(T &&msg);
+    T receive();
 
 private:
     
@@ -38,7 +40,8 @@ enum class TrafficLightPhase {
 class TrafficLight : public TrafficObject
 {
 public:
-    // constructor / desctructor
+    // constructor / destructor
+    TrafficLight();
 
     // getters / setters
     TrafficLightPhase getCurrentPhase();
@@ -46,6 +49,7 @@ public:
     // typical behaviour methods
     void waitForGreen();
     void simulate();
+    void toggleTrafficLightPhase();
     
 private:
     // typical behaviour methods
@@ -58,6 +62,7 @@ private:
     std::condition_variable _condition;
     std::mutex _mutex;
     TrafficLightPhase _currentPhase;
+    MessageQueue<TrafficLightPhase> _queue;
 };
 
 #endif
