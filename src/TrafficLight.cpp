@@ -23,7 +23,7 @@ void MessageQueue<T>::send(T &&msg)
 // Returns a random float number in the range from [n,m)
 double randomFloatBetween(float n, float m)
 {
-    return m + (rand() / (RAND_MAX / (n-m)));
+    return m + (rand() / (RAND_MAX / (m-n)));
 }
 
 /* Implementation of class "TrafficLight" */
