@@ -16,11 +16,15 @@ T MessageQueue<T>::receive()
     std::unique_lock<std::mutex> myLock(_mutex);
 
     // pass unique lock to condition variable
-    _cond.wait(myLock, [this] { return !_messages.empty(); }); 
+    // check that new data is really available via !_messages.empty() to avoid issuing wait() in case of spurious wake up
+    _cond.wait(myLock, [this] { return !_messages.empty(); });
 
     // remove last element from _messages
     T msg = std::move(_messages.back());
-    _messages.pop_back();
+    // _messages.pop_back(); // This does not work because if traffic light gets toggled multiple times without a vehicle 
+    // visiting the intersection, messages pile up in the queue
+    // std::cout << "Queue length before clear() = " << _messages.size() << std::endl;
+    _messages.clear();
 
     return msg;
 }
