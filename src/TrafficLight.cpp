@@ -18,6 +18,15 @@ void MessageQueue<T>::send(T &&msg)
 {
     // FP.4a : The method send should use the mechanisms std::lock_guard<std::mutex> 
     // as well as _condition.notify_one() to add a new message to the queue and afterwards send a notification.
+
+    // perform modification of _messages under the lock
+    std::lock_guard<std::mutex> myLock(_mutex);
+
+    // add msg to queue
+    _messages.push_back(std::move(msg));
+
+    // notify client after pushing new message into deque
+    _cond.notify_one(); 
 }
 
 // Returns a random float number in the range from [n,m)
